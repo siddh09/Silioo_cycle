@@ -97,7 +97,3 @@ Evaluates flow circularity based on virgin material inputs ($V$) and unrecovered
 $$\text{LFI} = \frac{V + W}{2M}$$
 $$\text{MCI} = 1 - \text{LFI} \times 0.9$$
 
----
-
-## 📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
