@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>SilicoCycle — VLSI Sustainability Platform</title>
+<meta name="description" content="Gate-level VLSI netlist sustainability scoring with AHP-derived Circular Economy Score."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+<style>
+:root{--navy:#0A1628;--blue:#1A56DB;--sky:#3B9EE8;--mint:#00C896;--amber:#F59E0B;--red:#EF4444;--bg:#EEF2F8;--card:#fff;--border:#DDE3EE;--muted:#5A6A8A;--text:#111827;--shadow:0 2px 16px rgba(10,22,40,.08)}
+html.dark{--bg:#0d1117;--card:#161b22;--border:#30363d;--muted:#8b949e;--text:#e6edf3;--shadow:0 2px 16px rgba(0,0,0,.4)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+
+nav{background:var(--navy);padding:0 28px;display:flex;align-items:center;height:58px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px #0006}
+.nav-brand{color:#fff;font-weight:800;font-size:1.15rem;display:flex;align-items:center;gap:10px}
+.nav-tag{background:var(--blue);color:#fff;padding:2px 8px;border-radius:5px;font-size:.72rem;font-weight:700;letter-spacing:.5px}
+.nav-right{margin-left:auto;display:flex;gap:10px;align-items:center}
+.nav-sub{color:#8899bb;font-size:.8rem}
+#theme-btn{background:transparent;border:1px solid #ffffff30;color:#aac;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:.8rem;transition:.2s}
+#theme-btn:hover{background:#ffffff15}
+
+.hero{padding:44px 24px 0;max-width:840px;margin:0 auto;text-align:center}
+.hero h1{font-size:2rem;font-weight:800;color:var(--navy);line-height:1.25}
+html.dark .hero h1{color:#e6edf3}
+.hero p{color:var(--muted);margin-top:10px;font-size:.96rem}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow)}
+.upload-card{margin:26px auto 0;max-width:720px;padding:28px}
+#drop-zone{border:2px dashed var(--border);border-radius:10px;padding:36px 20px;cursor:pointer;text-align:center;transition:.2s;background:var(--bg)}
+#drop-zone.drag-over,#drop-zone:hover{border-color:var(--blue);background:rgba(26,86,219,.05)}
+#drop-zone svg{display:block;margin:0 auto 10px}
+#drop-zone p{color:var(--muted);font-size:.88rem}
+#drop-zone strong{color:var(--text)}
+#file-name{margin-top:8px;font-size:.82rem;color:var(--blue);font-weight:500;min-height:18px}
+.opts-row{display:flex;gap:12px;margin-top:18px;align-items:center;flex-wrap:wrap}
+.opts-row label{font-size:.8rem;font-weight:600;color:var(--muted);white-space:nowrap}
+select,input[type=file]{flex:1;padding:10px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.86rem;background:var(--card);color:var(--text);outline:none;cursor:pointer}
+select:focus{border-color:var(--blue)}
+.btn{padding:10px 24px;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer;border:none;transition:.18s}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#1344bb}.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{background:var(--card);color:var(--blue);border:1.5px solid var(--blue)}.btn-outline:hover{background:rgba(26,86,219,.07)}
+.btn-mint{background:var(--mint);color:#fff}.btn-mint:hover{background:#00a87e}
+.btn-sm{padding:6px 14px;font-size:.78rem}
+.sample-link{font-size:.78rem;color:var(--sky);cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block}
+#error-box{display:none;background:#fee2e2;color:#991b1b;border-radius:10px;padding:12px 18px;max-width:720px;margin:16px auto;font-size:.86rem;border:1px solid #fca5a5}
+#loading{display:none;text-align:center;padding:44px}
+.spinner{width:42px;height:42px;border:4px solid var(--border);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+#results{display:none;max-width:1120px;margin:0 auto;padding:28px 20px 48px}
+.sec-title{font-size:1rem;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+.top-grid{display:grid;grid-template-columns:280px 1fr 1fr;gap:18px;margin-bottom:18px}
+.gauge-card{padding:22px 16px;text-align:center}
+.gauge-svg{width:210px;height:124px;overflow:visible}
+#gauge-arc{transition:stroke-dashoffset 1.2s cubic-bezier(.34,1.56,.64,1),stroke .5s}
+.g-val{font-size:2.4rem;font-weight:800;fill:var(--navy)}
+html.dark .g-val{fill:#e6edf3}
+.g-lbl{font-size:.7rem;fill:var(--muted)}
+.mci-row{margin-top:8px;font-size:.84rem;color:var(--muted)}
+.mci-row strong{color:var(--text)}
+.pkg-badge{display:inline-block;margin-top:6px;padding:2px 10px;background:var(--bg);border-radius:20px;font-size:.76rem;font-weight:600;color:var(--muted);border:1px solid var(--border)}
+
+.subscores-card,.chart-card{padding:22px}
+.bar-row{margin-bottom:16px}
+.bar-meta{display:flex;justify-content:space-between;margin-bottom:5px}
+.bar-meta span:first-child{font-size:.82rem;font-weight:600}
+.bar-val{font-size:1.1rem;font-weight:700}
+.bar-track{height:10px;background:var(--border);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;width:0;transition:width 1s cubic-bezier(.34,1.2,.64,1)}
+
+.stats6{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin-bottom:18px}
+.stat-card{padding:16px 12px;text-align:center}
+.stat-val{font-size:1.35rem;font-weight:800;color:var(--text)}
+.stat-lbl{font-size:.7rem;color:var(--muted);margin-top:3px}
+
+.eda-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.eda-card{padding:20px}
+.eda-row{margin-bottom:10px}
+.eda-meta{display:flex;justify-content:space-between;margin-bottom:4px;font-size:.8rem}
+.eda-track{height:7px;background:var(--border);border-radius:99px;overflow:hidden}
+.eda-fill{height:100%;border-radius:99px;transition:width 1s ease}
+
+.table-card{padding:22px;margin-bottom:18px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+thead th{background:var(--navy);color:#fff;padding:9px 12px;text-align:left;font-weight:600;font-size:.76rem}
+thead th:first-child{border-radius:6px 0 0 0}thead th:last-child{border-radius:0 6px 0 0}
+tbody tr:nth-child(even){background:var(--bg)}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:.7rem;font-weight:700}
+.badge-green{background:#dcfce7;color:#15803d}.badge-red{background:#fee2e2;color:#b91c1c}.badge-amber{background:#fef3c7;color:#92400e}
+
+.rec-card{padding:22px;margin-bottom:18px}
+.rec-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.rec-item:last-child{border-bottom:none}
+.rec-icon{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.rec-text{font-size:.85rem;line-height:1.5}
+.rec-text strong{color:var(--text)}
+
+.vault-section{margin-top:18px;padding:22px}
+.vault-controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+#vault-list{display:flex;flex-direction:column;gap:8px}
+.vault-item{padding:12px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px}
+.vault-chip{display:flex;justify-content:space-between;margin-bottom:6px}
+.vault-name{font-weight:600;font-size:.84rem}
+.vault-time{font-size:.72rem;color:var(--muted)}
+.vault-scores{display:flex;gap:12px;flex-wrap:wrap}
+.vault-score{font-size:.78rem;font-weight:600;color:var(--muted)}
+#vault-empty{color:var(--muted);font-size:.85rem;text-align:center;padding:16px 0}
+
+#compare-section{display:none;padding:22px;margin-top:18px}
+.download-row{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:18px}
+</style>
+</head>
+<body>
+<nav>
+  <div class="nav-brand">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#3B9EE8" stroke-width="2"/><path d="M8 12a4 4 0 0 1 8 0" stroke="#00C896" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" fill="#fff"/></svg>
+    SilicoCycle <span class="nav-tag">BETA</span>
+  </div>
+  <div class="nav-right">
+    <span class="nav-sub">VLSI Circular Economy Platform</span>
+    <button class="btn" id="theme-btn">☾ Dark</button>
+  </div>
+</nav>
+
+<div class="hero">
+  <h1>Sustainability Score Your Chip Design</h1>
+  <p>Upload a Yosys gate-level JSON netlist for an instant Circular Economy Score, advanced EDA metrics, and a PDF compliance report.</p>
+</div>
+<div id="error-box"></div>
+
+<div class="card upload-card">
+  <div id="drop-zone">
+    <svg width="38" height="38" fill="none" viewBox="0 0 24 24"><path d="M12 16V8m0 0-3 3m3-3 3 3" stroke="#1A56DB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><rect x="3" y="3" width="18" height="18" rx="4" stroke="#DDE3EE" stroke-width="1.5"/></svg>
+    <p><strong>Drop your Yosys JSON netlist here</strong></p>
+    <p>or click to browse &mdash; .json files only</p>
+    <input type="file" id="file-input" accept=".json" style="display:none"/>
+  </div>
+  <div id="file-name"></div>
+  <a class="sample-link" id="sample-btn">↓ Download sample netlist for testing</a>
+  <div class="opts-row">
+    <label>Packaging:</label>
+    <select id="pkg-select">
+      <option value="FC-BGA">FC-BGA (Flip-Chip BGA)</option>
+      <option value="BGA">BGA (Ball Grid Array)</option>
+      <option value="QFP">QFP (Quad Flat Package)</option>
+    </select>
+    <button class="btn btn-primary" id="analyze-btn" disabled>Analyze</button>
+  </div>
+</div>
+
+<div id="loading"><div class="spinner"></div><p style="color:var(--muted);font-size:.88rem">Parsing netlist &amp; computing scores…</p></div>
+
+<div id="results">
+  <div class="sec-title">Sustainability Scores</div>
+  <div class="top-grid">
+    <div class="card gauge-card">
+      <svg class="gauge-svg" viewBox="-5 -5 220 130">
+        <path d="M 15 110 A 95 95 0 0 1 205 110" fill="none" stroke="var(--border)" stroke-width="16" stroke-linecap="round"/>
+        <path id="gauge-arc" d="M 15 110 A 95 95 0 0 1 205 110" fill="none" stroke="var(--blue)" stroke-width="16" stroke-linecap="round" stroke-dasharray="298.45" stroke-dashoffset="298.45"/>
+        <text id="gauge-val" x="110" y="92" text-anchor="middle" class="g-val" font-family="Inter,sans-serif">--</text>
+        <text x="110" y="112" text-anchor="middle" class="g-lbl" font-family="Inter,sans-serif">CES Score / 100</text>
+      </svg>
+      <div class="mci-row">MCI: <strong id="mci-val">--</strong></div>
+      <div><span class="pkg-badge" id="pkg-badge">--</span></div>
+    </div>
+    <div class="card subscores-card">
+      <div style="font-size:.88rem;font-weight:700;margin-bottom:18px">Sub-Score Breakdown</div>
+      <div class="bar-row"><div class="bar-meta"><span>Toxicity</span><span class="bar-val" id="tox-val">--</span></div><div class="bar-track"><div class="bar-fill" id="tox-bar"></div></div></div>
+      <div class="bar-row"><div class="bar-meta"><span>Recoverability</span><span class="bar-val" id="recov-val">--</span></div><div class="bar-track"><div class="bar-fill" id="recov-bar"></div></div></div>
+      <div class="bar-row" style="margin-bottom:0"><div class="bar-meta"><span>Disassembly</span><span class="bar-val" id="dis-val">--</span></div><div class="bar-track"><div class="bar-fill" id="dis-bar"></div></div></div>
+    </div>
+    <div class="card chart-card">
+      <div style="font-size:.88rem;font-weight:700;margin-bottom:8px">Sustainability Radar</div>
+      <canvas id="radar-chart" height="160"></canvas>
+    </div>
+  </div>
+
+  <div class="stats6">
+    <div class="card stat-card"><div class="stat-val" id="s-cells">--</div><div class="stat-lbl">Total Cells</div></div>
+    <div class="card stat-card"><div class="stat-val" id="s-seq">--</div><div class="stat-lbl">Sequential %</div></div>
+    <div class="card stat-card"><div class="stat-val" id="s-cong">--</div><div class="stat-lbl">Routing Congestion</div></div>
+    <div class="card stat-card"><div class="stat-val" id="s-depth">--</div><div class="stat-lbl">Logic Depth Est.</div></div>
+    <div class="card stat-card"><div class="stat-val" id="s-ds">--</div><div class="stat-lbl">Avg Drive Strength</div></div>
+    <div class="card stat-card"><div class="stat-val" id="s-xor">--</div><div class="stat-lbl">XOR% (Crypto)</div></div>
+  </div>
+
+  <div class="eda-grid">
+    <div class="card eda-card">
+      <div style="font-size:.88rem;font-weight:700;margin-bottom:14px">EDA Cell Composition</div>
+      <div class="eda-row"><div class="eda-meta"><span>Arithmetic Cells</span><span id="eda-arith-lbl">--</span></div><div class="eda-track"><div class="eda-fill" id="eda-arith" style="background:#1A56DB"></div></div></div>
+      <div class="eda-row"><div class="eda-meta"><span>Clock Tree Cells</span><span id="eda-clock-lbl">--</span></div><div class="eda-track"><div class="eda-fill" id="eda-clock" style="background:#F59E0B"></div></div></div>
+      <div class="eda-row"><div class="eda-meta"><span>Routing-Critical</span><span id="eda-route-lbl">--</span></div><div class="eda-track"><div class="eda-fill" id="eda-route" style="background:#00C896"></div></div></div>
+      <div class="eda-row"><div class="eda-meta"><span>Sequential (FF)</span><span id="eda-seq-lbl">--</span></div><div class="eda-track"><div class="eda-fill" id="eda-seq" style="background:#EF4444"></div></div></div>
+    </div>
+    <div class="card chart-card">
+      <div style="font-size:.88rem;font-weight:700;margin-bottom:8px">Material Mass Distribution</div>
+      <canvas id="bom-chart" height="160"></canvas>
+    </div>
+  </div>
+
+  <div class="card table-card">
+    <div class="sec-title">Material Bill of Materials</div>
+    <table>
+      <thead><tr><th>Material</th><th>VLSI Use</th><th>RoHS</th><th>EOL Recycle %</th><th>Toxicity</th><th>Est. Mass (g)</th></tr></thead>
+      <tbody id="bom-body"></tbody>
+    </table>
+  </div>
+
+  <div class="card rec-card">
+    <div class="sec-title">Recommendations</div>
+    <div id="rec-list"></div>
+  </div>
+
+  <div class="card vault-section">
+    <div class="sec-title">Design Vault <span style="font-size:.72rem;color:var(--muted);font-weight:400;margin-left:6px">— last 10 analyses stored locally</span></div>
+    <div class="vault-controls">
+      <button class="btn btn-outline btn-sm" id="compare-btn" style="display:none">⚖ Compare All Designs</button>
+      <button class="btn btn-sm" style="background:var(--bg);border:1px solid var(--border);color:var(--muted)" id="vault-clear">Clear Vault</button>
+    </div>
+    <div id="vault-list"></div>
+    <div id="vault-empty">No designs analysed yet. Run your first analysis above!</div>
+  </div>
+
+  <div class="card compare-section" id="compare-section">
+    <div class="sec-title">Multi-Design Score Comparison</div>
+    <canvas id="comp-chart" height="120"></canvas>
+  </div>
+
+  <div class="download-row">
+    <button class="btn btn-outline" id="reset-btn">← New Analysis</button>
+    <button class="btn btn-mint" id="pdf-btn">⬇ Download PDF Report</button>
+  </div>
+</div>
+
+<script>
+function setEdaBar(id, val, total) {
+  const pct = total ? (val / total * 100) : 0;
+  const bar = document.getElementById(id);
+  const lbl = document.getElementById(id + "-lbl");
+  if (bar) bar.style.width = pct + "%";
+  if (lbl) lbl.textContent = (val || 0).toLocaleString();
+}
+</script>
+<script src="/static/app.js"></script>
+</body>
+</html>
